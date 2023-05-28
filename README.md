@@ -1,5 +1,5 @@
-# Bicimad_Grupo16
-Participantes Grupo 16:
+# Bicimad_Grupo15
+Participantes Grupo 15:
 - Teresa Ballester Navarro
 - David González Morala
 
