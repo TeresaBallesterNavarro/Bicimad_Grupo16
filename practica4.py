@@ -67,12 +67,7 @@ def caminos(data):
 
 
 def edades(data):
-    """
-    usuarios = []
-    for i in range(6):
-        rdd = data.filter(lambda x: (x[5] == i))
-        usuarios.append(rdd)
-    """
+
     usuarios_niños = data.filter(lambda x: x[5] == 0)
     usuarios_adolescentes = data.filter(lambda x: x[5] == 1)
     usuarios_jovenes = data.filter(lambda x: x[5] == 2)
@@ -88,10 +83,7 @@ def edades(data):
     usos = []
     for u in usuarios:
         usos.append(u.map(lambda x: (x[5],1)).reduceByKey(lambda x,y: x + y).take(1)[0][1])
-    
-    
-    for u in usuarios:
-        print(u.count())
+
     return usuarios, medias, usos
 
 def estaciones(data):
@@ -191,12 +183,16 @@ def main(sc, filename):
     print(f'El tiempo medio de los usuarios que realizan un ciclo es de {(f"{data_ciclo[1]:.2f}")} minutos')
     print(f'El número total de usuarios que realizan un ciclo es de {data_ciclo[3]} usuarios')                                                                        
     print(f'El número total de bicicletas usadas para realizar ciclos es {data_ciclo[2]}')
+    print('\n\n')
+    
     
     
     data_camino = caminos(rdd)
     print('--------ANÁLISIS DE CAMINOS--------')
     print(f'El tiempo medio de los usuarios que realizan un camino es de {(f"{data_camino[1]:.2f}")} minutos')
     print(f'Dentro de los usuarios que realizan un ciclo hay {data_camino[2]} usuarios que realizan un camino')
+    print('\n\n')
+    
     
     
     data_edades = edades(rdd)
@@ -205,6 +201,7 @@ def main(sc, filename):
     for i in range(len(data_edades)):
         print(f'El tiempo medio de uso en los {nombres[i]} es {(f"{(data_edades[1][i]):.2f}")} minutos')
         print(f'Los {nombres[i]}  han usado {data_edades[2][i]}  veces BICIMAD')
+        print('\n')
         
     data_estaciones = estaciones(rdd)
     
@@ -213,40 +210,55 @@ def main(sc, filename):
     print("--------------- 5 ESTACIONES de SALIDA MÁS FRECUENTES ---------------")
     estaciones_top = data_estaciones[0] # Estaciones más frecuentes
     print(estaciones_top.take(5))
+    print('\n')
+    
     print("--------------- 5 ESTACIONES de SALIDA MENOS FRECUENTES ---------------")
     estaciones_bottom =  data_estaciones[1]# Estaciones menos frecuentes 
     print(estaciones_bottom.take(5))
+    print('\n')
         
     # Obtener las estaciones más frecuentes 
     print("--------------- 5 ESTACIONES de LLEGADA MÁS FRECUENTES ---------------")
     estaciones_top_d = data_estaciones[2] # Estaciones más frecuentes
     print(estaciones_top_d.take(5))
+    print('\n')
+    
     print("--------------- 5 ESTACIONES de LLEGADA MENOS FRECUENTES ---------------")
     estaciones_bottom_d = data_estaciones[3] # Estaciones menos frecuentes 
     print(estaciones_bottom_d.take(5))
-         
+    print('\n')
+          
     print("--------------- 5 ESTACIONES para los CICLOS MÁS FRECUENTES ---------------")
     estaciones_top_c = data_estaciones[4] # Estaciones más frecuentes
     print(estaciones_top_c.take(5))
+    print('\n')
+    
     print("--------------- 5 ESTACIONES para los CICLOS MENOS FRECUENTES ---------------")
     estaciones_bottom_c = data_estaciones[5] # Estaciones menos frecuentes 
     print(estaciones_bottom_c.take(5))
-        
+    print('\n')
+    
     print("--------------- 5 ESTACIONES para los CAMINOS MÁS FRECUENTES ---------------")
     estaciones_top_ca = data_estaciones[6] # Estaciones más frecuentes
     print(estaciones_top_ca.take(5))
+    print('\n')
+    
     print("--------------- 5 ESTACIONES para los CAMINOS MENOS FRECUENTES ---------------")
     estaciones_bottom_ca = data_estaciones[7] # Estaciones menos frecuentes 
     print(estaciones_bottom_ca.take(5))
+    print('\n')
         
     for i in range(len(data_estaciones[8])): 
         print(f"--------------- 5 ESTACIONES MÁS FRECUENTES para {nombres[i]} ---------------")
         estaciones_top_n = data_estaciones[8][i] # Estaciones más frecuentes
         print(estaciones_top_n.take(5))
+        
+        
         print(f"--------------- 5 ESTACIONES MENOS FRECUENTES para {nombres[i]} ---------------")
         estaciones_bottom_n = data_estaciones[9][i] # Estaciones menos frecuentes 
         print(estaciones_bottom_n.take(5))
-        print('\n\n')
+        print('\n')
+        
         
    
      
