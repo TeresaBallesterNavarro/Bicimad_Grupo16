@@ -63,25 +63,37 @@ def caminos(data):
     num_usuario_camino = usuario_camino.count()
     media_camino = usuario_camino.map(lambda x : x[4]).mean()/60
 
-    return media_camino, num_usuario_camino
+    return usuario_camino, media_camino, num_usuario_camino
+
 
 def edades(data):
-
+    """
     usuarios = []
     for i in range(6):
-        usuarios.append((data.filter(lambda x: x[5] == i)))
-        
+        rdd = data.filter(lambda x: (x[5] == i))
+        usuarios.append(rdd)
+    """
+    usuarios_niños = data.filter(lambda x: x[5] == 0)
+    usuarios_adolescentes = data.filter(lambda x: x[5] == 1)
+    usuarios_jovenes = data.filter(lambda x: x[5] == 2)
+    usuarios_jovenes_adultos = data.filter(lambda x: x[5] == 3)
+    usuarios_adultos = data.filter(lambda x: x[5] == 4)
+    usuarios_mayores = data.filter(lambda x: x[5] == 5)
+    
+    usuarios = [usuarios_niños, usuarios_adolescentes, usuarios_jovenes, usuarios_jovenes_adultos, usuarios_adultos, usuarios_mayores]
     medias = []
     for u in usuarios:
         medias.append(u.map(lambda x: (x[4])).mean()/60)
-
+    
     usos = []
     for u in usuarios:
         usos.append(u.map(lambda x: (x[5],1)).reduceByKey(lambda x,y: x + y).take(1)[0][1])
-        
-    print(medias, usos)
-    return medias, usos
-"""
+    
+    
+    for u in usuarios:
+        print(u.count())
+    return usuarios, medias, usos
+
 def estaciones(data):
     
     
@@ -95,48 +107,85 @@ def estaciones(data):
     
     
     # Mapeo y conteo de estaciones
-    estaciones_destino = rdd1.map(lambda x: (x[3], 1)) \
+    estaciones_destino = data.map(lambda x: (x[3], 1)) \
                                .reduceByKey(lambda x, y: x + y)
     
     # Ordenar por frecuencia
     estaciones_frecuentes_d = estaciones_destino.sortBy(lambda x: x[1], ascending = False)
     estaciones_NOfrecuentes_d = estaciones_destino.sortBy(lambda x: x[1], ascending = True)
     
-    estaciones_ciclos = usuarios_ciclo.map(lambda x: (x[3], 1)) \
+    usuarios_ciclo = ciclos(data)
+    estaciones_ciclos = usuarios_ciclo[0].map(lambda x: (x[3], 1)) \
                            .reduceByKey(lambda x, y: x + y)
     
     estaciones_frecuentes_c = estaciones_ciclos.sortBy(lambda x: x[1], ascending = False)
     estaciones_NOfrecuentes_c = estaciones_ciclos.sortBy(lambda x: x[1], ascending = True)
     
         
-    
-    estaciones_caminos = usuario_camino.map(lambda x: (x[3], 1)) \
+    usuarios_camino = caminos(data)
+    estaciones_caminos = usuarios_camino[0].map(lambda x: (x[3], 1)) \
                                .reduceByKey(lambda x, y: x + y)
+   
     
     estaciones_frecuentes_ca = estaciones_caminos.sortBy(lambda x: x[1], ascending = False)
     estaciones_NOfrecuentes_ca = estaciones_caminos.sortBy(lambda x: x[1], ascending = True)
     
     
-    
-    lista_rdds = [usuarios_niños, usuarios_adolescentes, usuarios_jovenes, usuarios_jovenes_adultos, usuarios_adultos, usuarios_mayores]
-    
-    for i in range(len(lista_rdds)):
-        estaciones_niños = lista_rdds[i].map(lambda x: (x[3], 1)) \
-                            .reduceByKey(lambda x, y: x + y)
-    
-        estaciones_frecuentes_n = estaciones_niños.sortBy(lambda x: x[1], ascending = False)
-        estaciones_NOfrecuentes_n = estaciones_niños.sortBy(lambda x: x[1], ascending = True)
-    
-        
-    
-       
-        return estaciones_frecuentes,estaciones_NOfrecuentes, estaciones_frecuentes_d,\
-            estaciones_NOfrecuentes_d
 
-"""
+    lista_rdds = edades(data)[0]
+    
+    
+    estaciones_niños = lista_rdds[0].map(lambda x: (x[3], 1)) \
+                            .reduceByKey(lambda x, y: x + y)
+    estaciones_frecuentes_n = estaciones_niños.sortBy(lambda x: x[1], ascending = False)
+    estaciones_NOfrecuentes_n = estaciones_niños.sortBy(lambda x: x[1], ascending = True)
+
+
+    estaciones_adolescentes = lista_rdds[1].map(lambda x: (x[3], 1)) \
+                         .reduceByKey(lambda x, y: x + y)
+    estaciones_frecuentes_a = estaciones_adolescentes.sortBy(lambda x: x[1], ascending = False)
+    estaciones_NOfrecuentes_a = estaciones_adolescentes.sortBy(lambda x: x[1], ascending = True)
+    
+    
+    estaciones_jovenes = lista_rdds[2].map(lambda x: (x[3], 1)) \
+                         .reduceByKey(lambda x, y: x + y)
+    estaciones_frecuentes_j = estaciones_jovenes.sortBy(lambda x: x[1], ascending = False)
+    estaciones_NOfrecuentes_j = estaciones_jovenes.sortBy(lambda x: x[1], ascending = True)                         
+                         
+                         
+    estaciones_jovenes_adultos = lista_rdds[3].map(lambda x: (x[3], 1)) \
+                       .reduceByKey(lambda x, y: x + y)
+    estaciones_frecuentes_j_a = estaciones_jovenes_adultos.sortBy(lambda x: x[1], ascending = False)
+    estaciones_NOfrecuentes_j_a = estaciones_jovenes_adultos.sortBy(lambda x: x[1], ascending = True)                       
+                       
+                       
+    estaciones_adultos = lista_rdds[4].map(lambda x: (x[3], 1)) \
+                         .reduceByKey(lambda x, y: x + y)
+    estaciones_frecuentes_ad = estaciones_adultos.sortBy(lambda x: x[1], ascending = False)
+    estaciones_NOfrecuentes_ad = estaciones_adultos.sortBy(lambda x: x[1], ascending = True)                         
+                         
+                         
+    estaciones_mayores = lista_rdds[5].map(lambda x: (x[3], 1)) \
+                         .reduceByKey(lambda x, y: x + y)
+    estaciones_frecuentes_m = estaciones_mayores.sortBy(lambda x: x[1], ascending = False)
+    estaciones_NOfrecuentes_m = estaciones_mayores.sortBy(lambda x: x[1], ascending = True)                     
+
+    estaciones_frecuentes_edades = [estaciones_frecuentes_n,estaciones_frecuentes_a,estaciones_frecuentes_j,
+                                    estaciones_frecuentes_j_a,estaciones_frecuentes_ad,estaciones_frecuentes_m]
+    
+    estaciones_NOfrecuentes_edades = [estaciones_NOfrecuentes_n,estaciones_NOfrecuentes_a,estaciones_NOfrecuentes_j,
+                                    estaciones_NOfrecuentes_j_a,estaciones_NOfrecuentes_ad,estaciones_NOfrecuentes_m]
+     
+       
+    return estaciones_frecuentes,estaciones_NOfrecuentes, estaciones_frecuentes_d,\
+            estaciones_NOfrecuentes_d,estaciones_frecuentes_c,estaciones_NOfrecuentes_c,\
+            estaciones_frecuentes_ca,estaciones_NOfrecuentes_ca,\
+           estaciones_frecuentes_edades, estaciones_NOfrecuentes_edades
+
+
 def main(sc, filename):
     rdd = sc.textFile(filename).map(FiletoDic)
-    """
+    
     data_ciclo = ciclos(rdd)
     print('--------ANÁLISIS DE CICLOS--------')
     print(f'El tiempo medio de los usuarios que realizan un ciclo es de {(f"{data_ciclo[1]:.2f}")} minutos')
@@ -146,57 +195,62 @@ def main(sc, filename):
     
     data_camino = caminos(rdd)
     print('--------ANÁLISIS DE CAMINOS--------')
-    print(f'El tiempo medio de los usuarios que realizan un camino es de {(f"{data_camino[0]:.2f}")} minutos')
-    print(f'Dentro de los usuarios que realizan un ciclo hay {data_camino[1]} usuarios que realizan un camino')
-    """
+    print(f'El tiempo medio de los usuarios que realizan un camino es de {(f"{data_camino[1]:.2f}")} minutos')
+    print(f'Dentro de los usuarios que realizan un ciclo hay {data_camino[2]} usuarios que realizan un camino')
+    
+    
     data_edades = edades(rdd)
     print('--------ANÁLISIS DE EDADES--------')
 
     for i in range(len(data_edades)):
-        print(f'El tiempo medio de uso en los {nombres[i]} es {(f"{(data_edades[0][i]):.2f}")} minutos')
-        print(f'Los {nombres[i]}  han usado {data_edades[1][i]}  veces BICIMAD')
-    """
+        print(f'El tiempo medio de uso en los {nombres[i]} es {(f"{(data_edades[1][i]):.2f}")} minutos')
+        print(f'Los {nombres[i]}  han usado {data_edades[2][i]}  veces BICIMAD')
+        
+    data_estaciones = estaciones(rdd)
+    
+   
     # Obtener las estaciones más frecuentes
     print("--------------- 5 ESTACIONES de SALIDA MÁS FRECUENTES ---------------")
-    estaciones_top = estaciones_frecuentes.take(n) # Estaciones más frecuentes
-    print(estaciones_top)
+    estaciones_top = data_estaciones[0] # Estaciones más frecuentes
+    print(estaciones_top.take(5))
     print("--------------- 5 ESTACIONES de SALIDA MENOS FRECUENTES ---------------")
-    estaciones_bottom = estaciones_NOfrecuentes.take(n) # Estaciones menos frecuentes 
-    print(estaciones_bottom)
-    
+    estaciones_bottom =  data_estaciones[1]# Estaciones menos frecuentes 
+    print(estaciones_bottom.take(5))
+        
     # Obtener las estaciones más frecuentes 
     print("--------------- 5 ESTACIONES de LLEGADA MÁS FRECUENTES ---------------")
-    estaciones_top_d = estaciones_frecuentes_d.take(n) # Estaciones más frecuentes
-    print(estaciones_top_d)
+    estaciones_top_d = data_estaciones[2] # Estaciones más frecuentes
+    print(estaciones_top_d.take(5))
     print("--------------- 5 ESTACIONES de LLEGADA MENOS FRECUENTES ---------------")
-    estaciones_bottom_d = estaciones_NOfrecuentes_d.take(n) # Estaciones menos frecuentes 
-    print(estaciones_bottom_d)
-     
+    estaciones_bottom_d = data_estaciones[3] # Estaciones menos frecuentes 
+    print(estaciones_bottom_d.take(5))
+         
     print("--------------- 5 ESTACIONES para los CICLOS MÁS FRECUENTES ---------------")
-    estaciones_top_c = estaciones_frecuentes_c.take(n) # Estaciones más frecuentes
-    print(estaciones_top_c)
+    estaciones_top_c = data_estaciones[4] # Estaciones más frecuentes
+    print(estaciones_top_c.take(5))
     print("--------------- 5 ESTACIONES para los CICLOS MENOS FRECUENTES ---------------")
-    estaciones_bottom_c = estaciones_NOfrecuentes_c.take(n) # Estaciones menos frecuentes 
-    print(estaciones_bottom_c)
-    
+    estaciones_bottom_c = data_estaciones[5] # Estaciones menos frecuentes 
+    print(estaciones_bottom_c.take(5))
+        
     print("--------------- 5 ESTACIONES para los CAMINOS MÁS FRECUENTES ---------------")
-    estaciones_top_ca = estaciones_frecuentes_ca.take(n) # Estaciones más frecuentes
-    print(estaciones_top_ca)
+    estaciones_top_ca = data_estaciones[6] # Estaciones más frecuentes
+    print(estaciones_top_ca.take(5))
     print("--------------- 5 ESTACIONES para los CAMINOS MENOS FRECUENTES ---------------")
-    estaciones_bottom_ca = estaciones_NOfrecuentes_ca.take(n) # Estaciones menos frecuentes 
-    print(estaciones_bottom_ca)
-    
-    print(f"--------------- 5 ESTACIONES MÁS FRECUENTES para {nombres[i]} ---------------")
-    estaciones_top_n = estaciones_frecuentes_n.take(n) # Estaciones más frecuentes
-    print(estaciones_top_n)
-    print(f"--------------- 5 ESTACIONES MENOS FRECUENTES para {nombres[i]} ---------------")
-    estaciones_bottom_n = estaciones_NOfrecuentes_n.take(n) # Estaciones menos frecuentes 
-    print(estaciones_bottom_n)
-    print('\n\n')
-    """
+    estaciones_bottom_ca = data_estaciones[7] # Estaciones menos frecuentes 
+    print(estaciones_bottom_ca.take(5))
+        
+    for i in range(len(data_estaciones[8])): 
+        print(f"--------------- 5 ESTACIONES MÁS FRECUENTES para {nombres[i]} ---------------")
+        estaciones_top_n = data_estaciones[8][i] # Estaciones más frecuentes
+        print(estaciones_top_n.take(5))
+        print(f"--------------- 5 ESTACIONES MENOS FRECUENTES para {nombres[i]} ---------------")
+        estaciones_bottom_n = data_estaciones[9][i] # Estaciones menos frecuentes 
+        print(estaciones_bottom_n.take(5))
+        print('\n\n')
+        
    
      
-"""     
+"""    
 usuarios_niños = data.filter(lambda x: x[5] == 0)
 usuarios_adolescentes = data.filter(lambda x: x[5] == 1)
 usuarios_jovenes = data.filter(lambda x: x[5] == 2)
@@ -218,20 +272,20 @@ usos_jovenes_adultos = usuarios_jovenes_adultos.map(lambda x: (x[5],1)).reduceBy
 usos_adultos = usuarios_adultos.map(lambda x: (x[5],1)).reduceByKey(lambda x,y: x + y).take(1)[0][1]
 usos_mayores = usuarios_mayores.map(lambda x: (x[5],1)).reduceByKey(lambda x,y: x + y).take(1)[0][1]
  
- print(f'El tiempo medio de uso en los niños es {(f"{(media_niños):.2f}")} minutos')
- print(f'El tiempo medio de uso en los adolescentes es {(f"{(media_adolescentes):.2f}")} minutos')
- print(f'El tiempo medio de uso en los jovenes es {f"{(media_jovenes):.2f}"} minutos')
- print(f'El tiempo medio de uso en los jovenes/adultos es {f"{(media_jovenes_adultos):.2f}"} minutos')
- print(f'El tiempo medio de uso en los adultos es {f"{(media_adultos):.2f}"} minutos')
- print(f'El tiempo medio de uso en los mayores es {f"{(media_mayores):.2f}"} minutos')
+print(f'El tiempo medio de uso en los niños es {(f"{(media_niños):.2f}")} minutos')
+print(f'El tiempo medio de uso en los adolescentes es {(f"{(media_adolescentes):.2f}")} minutos')
+print(f'El tiempo medio de uso en los jovenes es {f"{(media_jovenes):.2f}"} minutos')
+print(f'El tiempo medio de uso en los jovenes/adultos es {f"{(media_jovenes_adultos):.2f}"} minutos')
+print(f'El tiempo medio de uso en los adultos es {f"{(media_adultos):.2f}"} minutos')
+print(f'El tiempo medio de uso en los mayores es {f"{(media_mayores):.2f}"} minutos')
  
  
- print(f'Los niños han usado {usos_niños} veces BICIMAD')
- print(f'Los adolescentes han usado {usos_adolescentes} veces BICIMAD')
- print(f'Los jovenes han usado {usos_jovenes} veces BICIMAD')
- print(f'Los jovenes/adultos han usado {usos_jovenes_adultos} veces BICIMAD')
- print(f'Los adultos han usado {usos_adultos} veces BICIMAD')
- print(f'Los mayores han usado {usos_mayores} veces BICIMAD')
+print(f'Los niños han usado {usos_niños} veces BICIMAD')
+print(f'Los adolescentes han usado {usos_adolescentes} veces BICIMAD')
+print(f'Los jovenes han usado {usos_jovenes} veces BICIMAD')
+print(f'Los jovenes/adultos han usado {usos_jovenes_adultos} veces BICIMAD')
+print(f'Los adultos han usado {usos_adultos} veces BICIMAD')
+print(f'Los mayores han usado {usos_mayores} veces BICIMAD')
 """
 
 if __name__ == "__main__":
