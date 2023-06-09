@@ -67,7 +67,6 @@ def caminos(data):
 
 
 def edades(data):
-
     usuarios_niños = data.filter(lambda x: x[5] == 0)
     usuarios_adolescentes = data.filter(lambda x: x[5] == 1)
     usuarios_jovenes = data.filter(lambda x: x[5] == 2)
@@ -87,8 +86,6 @@ def edades(data):
     return usuarios, medias, usos
 
 def estaciones(data):
-    
-    
     # Mapeo y conteo de estaciones
     estaciones_origen = data.map(lambda x: (x[2], 1))\
                                .reduceByKey(lambda x, y: x + y)
@@ -185,14 +182,12 @@ def main(sc, filename):
     print(f'El número total de bicicletas usadas para realizar ciclos es {data_ciclo[2]}')
     print('\n\n')
     
-    
-    
+
     data_camino = caminos(rdd)
     print('--------ANÁLISIS DE CAMINOS--------')
     print(f'El tiempo medio de los usuarios que realizan un camino es de {(f"{data_camino[1]:.2f}")} minutos')
     print(f'Dentro de los usuarios que realizan un ciclo hay {data_camino[2]} usuarios que realizan un camino')
     print('\n\n')
-    
     
     
     data_edades = edades(rdd)
@@ -205,7 +200,6 @@ def main(sc, filename):
         
     data_estaciones = estaciones(rdd)
     
-   
     # Obtener las estaciones más frecuentes
     print("--------------- 5 ESTACIONES de SALIDA MÁS FRECUENTES ---------------")
     estaciones_top = data_estaciones[0] # Estaciones más frecuentes
@@ -258,47 +252,6 @@ def main(sc, filename):
         estaciones_bottom_n = data_estaciones[9][i] # Estaciones menos frecuentes 
         print(estaciones_bottom_n.take(5))
         print('\n')
-        
-        
-   
-     
-"""    
-usuarios_niños = data.filter(lambda x: x[5] == 0)
-usuarios_adolescentes = data.filter(lambda x: x[5] == 1)
-usuarios_jovenes = data.filter(lambda x: x[5] == 2)
-usuarios_jovenes_adultos = data.filter(lambda x: x[5] == 3)
-usuarios_adultos = data.filter(lambda x: x[5] == 4)
-usuarios_mayores = data.filter(lambda x: x[5] == 5)
- 
-media_niños = usuarios_niños.map(lambda x: (x[4])).mean()/60
-media_adolescentes = usuarios_adolescentes.map(lambda x: (x[4])).mean()/60
-media_jovenes = usuarios_jovenes.map(lambda x: (x[4])).mean()/60
-media_jovenes_adultos = usuarios_jovenes_adultos.map(lambda x: (x[4])).mean()/60
-media_adultos = usuarios_adultos.map(lambda x: (x[4])).mean()/60
-media_mayores = usuarios_mayores.map(lambda x: (x[4])).mean()/60
- 
-usos_niños = usuarios_niños.map(lambda x: (x[5],1)).reduceByKey(lambda x,y: x + y).take(1)[0][1]
-usos_adolescentes = usuarios_adolescentes.map(lambda x: (x[5],1)).reduceByKey(lambda x,y: x + y).take(1)[0][1]
-usos_jovenes = usuarios_jovenes.map(lambda x: (x[5],1)).reduceByKey(lambda x,y: x + y).take(1)[0][1]
-usos_jovenes_adultos = usuarios_jovenes_adultos.map(lambda x: (x[5],1)).reduceByKey(lambda x,y: x + y).take(1)[0][1]
-usos_adultos = usuarios_adultos.map(lambda x: (x[5],1)).reduceByKey(lambda x,y: x + y).take(1)[0][1]
-usos_mayores = usuarios_mayores.map(lambda x: (x[5],1)).reduceByKey(lambda x,y: x + y).take(1)[0][1]
- 
-print(f'El tiempo medio de uso en los niños es {(f"{(media_niños):.2f}")} minutos')
-print(f'El tiempo medio de uso en los adolescentes es {(f"{(media_adolescentes):.2f}")} minutos')
-print(f'El tiempo medio de uso en los jovenes es {f"{(media_jovenes):.2f}"} minutos')
-print(f'El tiempo medio de uso en los jovenes/adultos es {f"{(media_jovenes_adultos):.2f}"} minutos')
-print(f'El tiempo medio de uso en los adultos es {f"{(media_adultos):.2f}"} minutos')
-print(f'El tiempo medio de uso en los mayores es {f"{(media_mayores):.2f}"} minutos')
- 
- 
-print(f'Los niños han usado {usos_niños} veces BICIMAD')
-print(f'Los adolescentes han usado {usos_adolescentes} veces BICIMAD')
-print(f'Los jovenes han usado {usos_jovenes} veces BICIMAD')
-print(f'Los jovenes/adultos han usado {usos_jovenes_adultos} veces BICIMAD')
-print(f'Los adultos han usado {usos_adultos} veces BICIMAD')
-print(f'Los mayores han usado {usos_mayores} veces BICIMAD')
-"""
 
 if __name__ == "__main__":
     filename = sys.argv[1]

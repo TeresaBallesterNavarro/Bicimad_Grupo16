@@ -11,6 +11,15 @@ import datetime # Para poder trabajar con fechas
 import sys
 import statistics
 
+FILES = ['201901_Usage_Bicimad.json', '201902_Usage_Bicimad.json',
+         '201903_Usage_Bicimad.json', '201904_Usage_Bicimad.json',
+         '201905_Usage_Bicimad.json', '201906_Usage_Bicimad.json',
+         '201907_Usage_Bicimad.json', '201908_Usage_Bicimad.json',
+         '201909_Usage_Bicimad.json', '201910_Usage_Bicimad.json',
+         '201911_Usage_Bicimad.json', '201912_Usage_Bicimad.json']
+meses = ['Enero', 'Febrero', 'Marzo', 'Abril', ' Mayo', 'Junio', 'Julio',
+         'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
 edades = ['0 a 11','12 a 17','18 a 24','25 a 44','45 a 64','+65']
 nombres = ['niños', 'adolescentes', 'jovenes', 'jovenes_adultos', 'adultos', 'mayores']
 
@@ -19,7 +28,6 @@ def init():
         .setAppName('PracticaSpark')
     sc = SparkContext(conf = conf)
     return sc
-
 
 def FiletoDic(line):
   data = json.loads(line)
@@ -85,7 +93,6 @@ def edades(data):
 
 def estaciones(data):
     
-    
     # Mapeo y conteo de estaciones
     estaciones_origen = data.map(lambda x: (x[2], 1))\
                                .reduceByKey(lambda x, y: x + y)
@@ -119,10 +126,8 @@ def estaciones(data):
     estaciones_frecuentes_ca = estaciones_caminos.sortBy(lambda x: x[1], ascending = False)
     estaciones_NOfrecuentes_ca = estaciones_caminos.sortBy(lambda x: x[1], ascending = True)
     
-    
 
     lista_rdds = edades(data)[0]
-    
     
     estaciones_niños = lista_rdds[0].map(lambda x: (x[3], 1)) \
                             .reduceByKey(lambda x, y: x + y)
@@ -172,95 +177,89 @@ def estaciones(data):
            estaciones_frecuentes_edades, estaciones_NOfrecuentes_edades
 
 
-def main(sc, filenames):
-    rddlist = []
-    for filename in filenames:
-        rddlist.append(sc.textFile(filename).map(FiletoDic))
-    
-    rdd = sc.union(rddlist)
-    data_ciclo = ciclos(rdd)
-    print('--------ANÁLISIS DE CICLOS--------')
-    print(f'El tiempo medio de los usuarios que realizan un ciclo es de {(f"{data_ciclo[1]:.2f}")} minutos')
-    print(f'El número total de usuarios que realizan un ciclo es de {data_ciclo[3]} usuarios')                                                                        
-    print(f'El número total de bicicletas usadas para realizar ciclos es {data_ciclo[2]}')
-    print('\n\n')
-    
-    
-    
-    data_camino = caminos(rdd)
-    print('--------ANÁLISIS DE CAMINOS--------')
-    print(f'El tiempo medio de los usuarios que realizan un camino es de {(f"{data_camino[1]:.2f}")} minutos')
-    print(f'Dentro de los usuarios que realizan un ciclo hay {data_camino[2]} usuarios que realizan un camino')
-    print('\n\n')
-    
-    
-    
-    data_edades = edades(rdd)
-    print('--------ANÁLISIS DE EDADES--------')
+def main(sc):
 
-    for i in range(len(data_edades)):
-        print(f'El tiempo medio de uso en los {nombres[i]} es {(f"{(data_edades[1][i]):.2f}")} minutos')
-        print(f'Los {nombres[i]}  han usado {data_edades[2][i]}  veces BICIMAD')
+    for i in range(len(FILES)):
+        rdd = sc.textFile(FILES[i]).map(FiletoDic)
+        print(f'###################### {meses[i]} 2019 ######################')
+        data_ciclo = ciclos(rdd)
+        print('--------ANÁLISIS DE CICLOS--------')
+        print(f'El tiempo medio de los usuarios que realizan un ciclo es de {(f"{data_ciclo[1]:.2f}")} minutos')
+        print(f'El número total de usuarios que realizan un ciclo es de {data_ciclo[3]} usuarios')                                                                        
+        print(f'El número total de bicicletas usadas para realizar ciclos es {data_ciclo[2]}')
+        print('\n\n')
+        
+            
+        data_camino = caminos(rdd)
+        print('--------ANÁLISIS DE CAMINOS--------')
+        print(f'El tiempo medio de los usuarios que realizan un camino es de {(f"{data_camino[1]:.2f}")} minutos')
+        print(f'Dentro de los usuarios que realizan un ciclo hay {data_camino[2]} usuarios que realizan un camino')
+        print('\n\n')
+        
+        
+        data_edades = edades(rdd)
+        print('--------ANÁLISIS DE EDADES--------')
+    
+        for i in range(len(data_edades)):
+            print(f'El tiempo medio de uso en los {nombres[i]} es {(f"{(data_edades[1][i]):.2f}")} minutos')
+            print(f'Los {nombres[i]}  han usado {data_edades[2][i]}  veces BICIMAD')
+            print('\n')
+            
+        data_estaciones = estaciones(rdd)
+               
+        # Obtener las estaciones más frecuentes
+        print("--------------- 5 ESTACIONES de SALIDA MÁS FRECUENTES ---------------")
+        estaciones_top = data_estaciones[0] # Estaciones más frecuentes
+        print(estaciones_top.take(5))
         print('\n')
         
-    data_estaciones = estaciones(rdd)
-    
-   
-    # Obtener las estaciones más frecuentes
-    print("--------------- 5 ESTACIONES de SALIDA MÁS FRECUENTES ---------------")
-    estaciones_top = data_estaciones[0] # Estaciones más frecuentes
-    print(estaciones_top.take(5))
-    print('\n')
-    
-    print("--------------- 5 ESTACIONES de SALIDA MENOS FRECUENTES ---------------")
-    estaciones_bottom =  data_estaciones[1]# Estaciones menos frecuentes 
-    print(estaciones_bottom.take(5))
-    print('\n')
-        
-    # Obtener las estaciones más frecuentes 
-    print("--------------- 5 ESTACIONES de LLEGADA MÁS FRECUENTES ---------------")
-    estaciones_top_d = data_estaciones[2] # Estaciones más frecuentes
-    print(estaciones_top_d.take(5))
-    print('\n')
-    
-    print("--------------- 5 ESTACIONES de LLEGADA MENOS FRECUENTES ---------------")
-    estaciones_bottom_d = data_estaciones[3] # Estaciones menos frecuentes 
-    print(estaciones_bottom_d.take(5))
-    print('\n')
-          
-    print("--------------- 5 ESTACIONES para los CICLOS MÁS FRECUENTES ---------------")
-    estaciones_top_c = data_estaciones[4] # Estaciones más frecuentes
-    print(estaciones_top_c.take(5))
-    print('\n')
-    
-    print("--------------- 5 ESTACIONES para los CICLOS MENOS FRECUENTES ---------------")
-    estaciones_bottom_c = data_estaciones[5] # Estaciones menos frecuentes 
-    print(estaciones_bottom_c.take(5))
-    print('\n')
-    
-    print("--------------- 5 ESTACIONES para los CAMINOS MÁS FRECUENTES ---------------")
-    estaciones_top_ca = data_estaciones[6] # Estaciones más frecuentes
-    print(estaciones_top_ca.take(5))
-    print('\n')
-    
-    print("--------------- 5 ESTACIONES para los CAMINOS MENOS FRECUENTES ---------------")
-    estaciones_bottom_ca = data_estaciones[7] # Estaciones menos frecuentes 
-    print(estaciones_bottom_ca.take(5))
-    print('\n')
-        
-    for i in range(len(data_estaciones[8])): 
-        print(f"--------------- 5 ESTACIONES MÁS FRECUENTES para {nombres[i]} ---------------")
-        estaciones_top_n = data_estaciones[8][i] # Estaciones más frecuentes
-        print(estaciones_top_n.take(5))
-        
-        
-        print(f"--------------- 5 ESTACIONES MENOS FRECUENTES para {nombres[i]} ---------------")
-        estaciones_bottom_n = data_estaciones[9][i] # Estaciones menos frecuentes 
-        print(estaciones_bottom_n.take(5))
+        print("--------------- 5 ESTACIONES de SALIDA MENOS FRECUENTES ---------------")
+        estaciones_bottom =  data_estaciones[1]# Estaciones menos frecuentes 
+        print(estaciones_bottom.take(5))
+        print('\n')
+            
+        # Obtener las estaciones más frecuentes 
+        print("--------------- 5 ESTACIONES de LLEGADA MÁS FRECUENTES ---------------")
+        estaciones_top_d = data_estaciones[2] # Estaciones más frecuentes
+        print(estaciones_top_d.take(5))
         print('\n')
         
+        print("--------------- 5 ESTACIONES de LLEGADA MENOS FRECUENTES ---------------")
+        estaciones_bottom_d = data_estaciones[3] # Estaciones menos frecuentes 
+        print(estaciones_bottom_d.take(5))
+        print('\n')
+              
+        print("--------------- 5 ESTACIONES para los CICLOS MÁS FRECUENTES ---------------")
+        estaciones_top_c = data_estaciones[4] # Estaciones más frecuentes
+        print(estaciones_top_c.take(5))
+        print('\n')
+        
+        print("--------------- 5 ESTACIONES para los CICLOS MENOS FRECUENTES ---------------")
+        estaciones_bottom_c = data_estaciones[5] # Estaciones menos frecuentes 
+        print(estaciones_bottom_c.take(5))
+        print('\n')
+        
+        print("--------------- 5 ESTACIONES para los CAMINOS MÁS FRECUENTES ---------------")
+        estaciones_top_ca = data_estaciones[6] # Estaciones más frecuentes
+        print(estaciones_top_ca.take(5))
+        print('\n')
+        
+        print("--------------- 5 ESTACIONES para los CAMINOS MENOS FRECUENTES ---------------")
+        estaciones_bottom_ca = data_estaciones[7] # Estaciones menos frecuentes 
+        print(estaciones_bottom_ca.take(5))
+        print('\n')
+            
+        for i in range(len(data_estaciones[8])): 
+            print(f"--------------- 5 ESTACIONES MÁS FRECUENTES para {nombres[i]} ---------------")
+            estaciones_top_n = data_estaciones[8][i] # Estaciones más frecuentes
+            print(estaciones_top_n.take(5))
+                        
+            print(f"--------------- 5 ESTACIONES MENOS FRECUENTES para {nombres[i]} ---------------")
+            estaciones_bottom_n = data_estaciones[9][i] # Estaciones menos frecuentes 
+            print(estaciones_bottom_n.take(5))
+            print('\n')
+            
 
 if __name__ == "__main__":
-    filename = sys.argv[1]
     with init() as sc:
-        main(sc, filename)
+        main(sc)
